@@ -38,15 +38,14 @@ class Service:
         conn.commit()
         return f"Book with the id: {cursor.lastrowid} created succesfully"
 
-    def predict_review(text):
-      
+    def load_and_predict(text):
+        print('load predict method')
         text_persist = text
         dp = DataPreprocessing()
         preprocessed_text = dp.apply_all( text)
         pred = Predict()
-        X, y = predict.word_to_tf_idf()
-        tfidf_vec = pred.loadTransform_tf_idf([preprocessed_text])
-        label = pred.load_predict( tfidf_vec)
+        X = predict.load_word_to_tf_idf([text])
+        label = pred.load_predict( X)
 
         #inserting text and predicted data into the table
         conn = DataBase.db_connection()
@@ -58,25 +57,11 @@ class Service:
         conn.commit()
         return int(label[0])
     
-    def fetch_latest_review():
-        conn = DataBase.db_connection()
-        cursor = conn.cursor()
-        print('working')
-        sql = """ SELECT * FROM reviews ORDER BY ID DESC LIMIT 1 """
-        cursor.execute(sql)
-
-        reviews = [
-            dict(id = row[0], review = row[1], label = row[2])
-            for row in cursor.fetchall()
-        ]
-        if reviews is not None:
-            return reviews
     
     def train_and_predict(text):
-
+        print('print train predict method')
         pred = Predict()
-
-        X,y = predict.word_to_tf_idf()
+        X,y = predict.create_word_to_tf_idf()
         pred.train_model(X,y)
         print('train successfull')
         text_persist = text
@@ -96,3 +81,18 @@ class Service:
         cursor.execute(sql,value)
         conn.commit()
         return int(label[0])
+
+
+    def fetch_latest_review():
+        conn = DataBase.db_connection()
+        cursor = conn.cursor()
+        print('working')
+        sql = """ SELECT * FROM reviews ORDER BY ID DESC LIMIT 1 """
+        cursor.execute(sql)
+
+        reviews = [
+            dict(id = row[0], review = row[1], label = row[2])
+            for row in cursor.fetchall()
+        ]
+        if reviews is not None:
+            return reviews

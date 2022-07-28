@@ -36,7 +36,6 @@ def add_review():
 def fetchOne():
     review =  Service.fetch_latest_review()
     print("workin")
-    lab = Service.train_and_predict("THTI bettre shall work")
     return jsonify(review)
 
 @application.route('/success/<label>')
@@ -48,12 +47,20 @@ def success(label):
     return render_template('result.html', label = label_)
 
 @application.route('/predict', methods=['POST','GET'])
-def predict():
+def load_predict():
     if request.method == 'POST':
         nw_text = request.form["review"]
-        nw_label = Service.predict_review(nw_text)
+        nw_label = Service.load_and_predict(nw_text)
         return redirect(url_for('success', label = nw_label))
     return render_template("feedback.html")
     
+@application.route('/train-predict', methods = ['GET', 'POST'])
+def train_predict():
+    print('train-predict route')
+    if request.method == 'POST':
+        nw_text = request.form["review"]
+        nw_label = Service.train_and_predict(nw_text)
+        return redirect(url_for('success', label = nw_label))
+    return render_template("train-predict.html")
 
     
