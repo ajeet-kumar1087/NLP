@@ -19,8 +19,8 @@ class Predict:
         print('writing tf_idf pickle file')
         tfidf = TfidfVectorizer(strip_accents = None, lowercase = False, preprocessor = None,  use_idf = True, norm = 'l2', smooth_idf = True)
         X = tfidf.fit_transform(text)
-        print(X.shape)
         pickle.dump(tfidf, open(r"app\pickle\tf_idf.pickle" , "wb"))
+        print(X.shape)
         return X
 
 
@@ -42,19 +42,28 @@ class Predict:
         y = xgb.predict(X)
         return y
 
-def word_to_tf_idf():
+def create_word_to_tf_idf():
+    print('create tfidf method')
     conn = DataBase.db_connection()
     data = pd.read_sql("select Review, Label from reviews LIMIT 1000", conn)
     data.rename(columns = {'Review': 'text', 'Label':'label'}, inplace = True)
+
     dataPre = DataPreprocessing()
     data['text'] = data['text'].apply(lambda x: dataPre.apply_all(x))
     y = data['label']
     print(data['text'][10])
+    
     predict = Predict()
     tf_idf = predict.createTransform_tf_idf(data['text'])
-    print(tf_idf.shape)
+    print('vectorizedshape',tf_idf.shape)
     return (tf_idf , y)
 
+def load_word_to_tf_idf(text):
+    print('load tfidf method')
+    predict = Predict()
+    tf_idf = predict.loadTransform_tf_idf(text)
+    print(tf_idf.shape)
+    return (tf_idf)
 
 
 
